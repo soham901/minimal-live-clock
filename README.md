@@ -36,7 +36,7 @@ This works in Chrome and other Chromium browsers (Edge, Brave, Arc).
 
 1. Download or clone this repo:
    ```sh
-   git clone <this-repo-url>
+   git clone https://github.com/soham901/minimal-live-clock.git
    ```
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode** (top right).
