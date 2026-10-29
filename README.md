@@ -49,6 +49,7 @@ Good to know:
 
 - Chrome focuses the address bar on a new tab, so click the page once before using the keyboard shortcuts.
 - Fonts load from Google Fonts, so the first load needs a connection. Offline, it falls back to a system font.
+- Chrome 138+ adds a footer to new tab pages provided by extensions (the extension name and a "Customize Chrome" button). It isn't part of the clock and an extension can't remove it. To hide it, use the "Show footer on New tab page" toggle in Customize Chrome, or right-click the footer and hide it.
 - Chrome may show a "disable developer mode extensions" notice on startup. Dismiss it, or keep the extension loaded as is.
 
 ### Or just open the file
