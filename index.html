@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Inter+Tight:wght@400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #09090b;
+    --fg: #fafafa;
+    --dim: #a1a1aa;
+    --faint: #71717a;
+    --accent: #fafafa;
+    --accent-2: #a1a1aa;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Inter Tight", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.idle { cursor: none; }
+
+  /* Clock */
+  .stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: min(80vw, 76vh);
+    aspect-ratio: 1;
+    animation: fadeIn 0.5s ease both;
+  }
+  .stage:not(.with-ring) { width: 96vw; aspect-ratio: auto; }
+  body.brb-on .stage { display: none; }
+
+  svg.ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    display: none;
+    overflow: visible;
+  }
+  .with-ring svg.ring { display: block; }
+  .ring circle { fill: none; stroke-width: 1; }
+  .ring .track { stroke: rgba(255,255,255,0.05); }
+  .ring .bar {
+    stroke: var(--fg);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s var(--ease);
+  }
+
+  .face { text-align: center; position: relative; }
+  .date {
+    position: fixed;
+    bottom: 32px;
+    left: 0; right: 0;
+    text-align: center;
+    color: var(--dim);
+    font-size: min(2.4vw, 3vh, 17px);
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: opacity 0.3s ease;
+  }
+  body.dock-open .date, body.brb-on .date { opacity: 0; }
+  .month {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    transition: opacity 0.3s ease;
+  }
+  .month-fill {
+    position: relative;
+    height: 100%;
+    background: var(--dim);
+        transition: width 0.8s var(--ease);
+  }
+  body.brb-on .month { opacity: 0; }
+  .time, .brb-title { font-family: "Space Grotesk", "Inter Tight", ui-sans-serif, system-ui, sans-serif; }
+  .time .ampm { font-family: "Inter Tight", sans-serif; }
+  .time {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    white-space: nowrap;
+    font-size: min(24vw, 40vh);
+  }
+  .with-ring .time { font-size: min(18vw, 17vh); }
+  .with-seconds .time { font-size: min(17vw, 34vh); }
+  .with-ring.with-seconds .time { font-size: min(13vw, 12.5vh); }
+  .colon { color: var(--faint); display: inline-block; transform: translateY(-0.06em); }
+  .sec { color: var(--dim); }
+  .ampm {
+    font-size: 0.2em;
+    font-weight: 600;
+    color: var(--dim);
+    margin-left: 0.2em;
+    letter-spacing: 0.04em;
+  }
+  .label {
+    margin-top: 1.6em;
+    color: var(--dim);
+    font-size: min(2.6vw, 2.8vh, 20px);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    display: none;
+  }
+  .with-ring .label { display: block; }
+
+  /* BRB */
+  .brb { display: none; text-align: center; }
+  body.brb-on .brb { display: block; animation: fadeIn 0.5s ease both; }
+  .brb-title {
+    font-size: min(30vw, 44vh);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    margin-right: -0.04em;
+    line-height: 0.9;
+  }
+  .brb-msg {
+    display: inline-block;
+    margin-top: 0.4em;
+    font-size: min(3.4vw, 5vh);
+    font-weight: 400;
+    color: var(--dim);
+    outline: none;
+    border-radius: 12px;
+    padding: 0.1em 0.4em;
+    cursor: text;
+    transition: background 0.2s, color 0.2s;
+  }
+  .brb-msg:hover { background: rgba(255,255,255,0.04); }
+  .brb-msg:focus { color: var(--fg); background: rgba(255,255,255,0.07); }
+  .brb-meta {
+    margin-top: 1.2em;
+    display: flex;
+    justify-content: center;
+    font-size: min(2vw, 2.8vh, 18px);
+    font-variant-numeric: tabular-nums;
+    color: var(--faint);
+    letter-spacing: 0.12em;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* Dock */
+  .controls {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+    padding: 5px;
+    background: rgba(24,24,27,0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    
+    transition: opacity 0.35s ease, transform 0.5s var(--ease);
+  }
+  body:not(.dock-open) .controls { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
+  button {
+    background: transparent;
+    color: var(--dim);
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s;
+  }
+  button:hover { color: var(--fg); background: rgba(255,255,255,0.06); }
+  button[aria-pressed="true"] { color: var(--fg); background: rgba(255,255,255,0.12); }
+  .sep { width: 1px; margin: 8px 4px; background: rgba(255,255,255,0.08); }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="track" cx="50" cy="50" r="48"/>
+      <circle class="bar" id="bar" cx="50" cy="50" r="48"/>
+    </svg>
+    <div class="face">
+      <div class="time" id="time"></div>
+      <div class="label" id="label"></div>
+    </div>
+  </div>
+
+  <div class="date" id="date"></div>
+  <div class="month" id="month"><div class="month-fill" id="monthFill"></div></div>
+  <div class="brb">
+    <div class="brb-title">BRB</div>
+    <div class="brb-msg" id="brbMsg" contenteditable="plaintext-only" spellcheck="false" title="Click to edit"></div>
+    <div class="brb-meta"><span id="brbMeta"></span></div>
+  </div>
+
+  <div class="controls">
+    <button id="btnBrb" aria-pressed="false" title="Be right back screen (B)">BRB</button>
+    <button id="btnSeconds" aria-pressed="false" title="Toggle seconds (S)">Seconds</button>
+    <button id="btnRing" title="Change ring (R)">Ring: Off</button>
+    <span class="sep"></span>
+    <button id="btnFull" title="Fullscreen (F)">Fullscreen</button>
+  </div>
+
+<script src="script.js"></script>
+</body>
+</html>
